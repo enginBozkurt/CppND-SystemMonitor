@@ -68,7 +68,7 @@ vector<int> LinuxParser::Pids() {
   return pids;
 }
 
-// TODO: Read and return the system memory utilization
+// TODO: review this function
 float LinuxParser::MemoryUtilization() {
   string line;
   string key;
@@ -92,8 +92,29 @@ float LinuxParser::MemoryUtilization() {
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { return 0; }
 
-// TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
+// Returns the total system ticks since boot
+long LinuxParser::Jiffies() {
+  string line = "";
+  string key = "";
+  long totalJiffies = 0;
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
+    std::stringstream linestream(line);
+    int value;  
+    // sum the values from the first line of the file
+    // user + nice + system + idle + iowait + irq + softirq + steal
+    for (int i = 0; i < 9; ++i) {
+      if (i == 0) {
+        linestream >> key;
+      } else {
+        linestream >> value;
+        totalJiffies += value;
+      }
+    }
+  }
+  return totalJiffies;
+}
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
