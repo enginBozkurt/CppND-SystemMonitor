@@ -28,6 +28,7 @@ std::string OperatingSystem();
 std::string Kernel();
 
 // CPU
+//TODO: should this be removed?
 enum CPUStates {
   kUser_ = 0,
   kNice_,
@@ -40,6 +41,15 @@ enum CPUStates {
   kGuest_,
   kGuestNice_
 };
+
+enum ProcessCpuStates {
+  kUtime = 14,
+  kStime = 15,
+  kCutime = 16,
+  kCstime = 17,
+  kStarttime = 22
+};
+
 std::vector<std::string> CpuUtilization();
 long Jiffies();
 long ActiveJiffies();
