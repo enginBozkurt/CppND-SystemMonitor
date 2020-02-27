@@ -89,7 +89,7 @@ float LinuxParser::MemoryUtilization() {
   return (mem_total - mem_free) / (float)mem_total;
 }
 
-// Return the system uptime
+// Return the system uptime in seconds
 long LinuxParser::UpTime() {
   string line;
   long up_time = 0;
@@ -126,7 +126,7 @@ long LinuxParser::Jiffies() {
   return jiffies;
 }
 
-// UNTESTED: Read and return the number of active jiffies for a PID
+// Read and return the number of active jiffies for a PID
 long LinuxParser::ActiveJiffies(int pid) {
   string line;
   string placeholder;
@@ -140,7 +140,7 @@ long LinuxParser::ActiveJiffies(int pid) {
     for (int token_id = 1; token_id <= 17; ++token_id) {
       if (token_id == ProcessCpuStates::kCstime ||
           token_id == ProcessCpuStates::kCutime ||
-          token_id == ProcessCpuStates::kStime  ||
+          token_id == ProcessCpuStates::kStime ||
           token_id == ProcessCpuStates::kUtime) {
         linestream >> jiffies;
         process_jiffies += jiffies;
@@ -311,6 +311,5 @@ long LinuxParser::UpTime(int pid) {
       }
     }
   }
-
-  return UpTime() - start_time / sysconf(_SC_CLK_TCK);
+  return start_time / sysconf(_SC_CLK_TCK);
 }
