@@ -39,11 +39,12 @@ string LinuxParser::OperatingSystem() {
 string LinuxParser::Kernel() {
   string os, kernel;
   string line;
+  string placeholder;
   std::ifstream stream(kProcDirectory + kVersionFilename);
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
-    linestream >> os >> kernel;
+    linestream >> os >> placeholder >> kernel;
   }
   return kernel;
 }
@@ -85,11 +86,11 @@ float LinuxParser::MemoryUtilization() {
       }
     }
   }
-  return (mem_total - mem_free) / (float) mem_total;
+  return (mem_total - mem_free) / (float)mem_total;
 }
 
 // Return the system uptime
-long LinuxParser::UpTime() { 
+long LinuxParser::UpTime() {
   string line;
   long up_time = 0;
   std::ifstream filestream(kProcDirectory + kUptimeFilename);
@@ -126,20 +127,20 @@ long LinuxParser::Jiffies() {
 }
 
 // UNTESTED: Read and return the number of active jiffies for a PID
-long LinuxParser::ActiveJiffies(int pid) { 
+long LinuxParser::ActiveJiffies(int pid) {
   string line;
   string placeholder;
   long jiffies = 0;
   long process_jiffies = 0;
   string kPidDirectory = '/' + std::to_string(pid);
-  std::ifstream filestream(kProcDirectory + kPidDirectory + kStatusFilename);
+  std::ifstream filestream(kProcDirectory + kPidDirectory + kStatFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
     for (int token_id = 1; token_id <= 17; ++token_id) {
-      if (token_id == ProcessCpuStates::kCstime || 
+      if (token_id == ProcessCpuStates::kCstime ||
           token_id == ProcessCpuStates::kCutime ||
-          token_id == ProcessCpuStates::kStime  || 
+          token_id == ProcessCpuStates::kStime  ||
           token_id == ProcessCpuStates::kUtime) {
         linestream >> jiffies;
         process_jiffies += jiffies;
@@ -152,9 +153,7 @@ long LinuxParser::ActiveJiffies(int pid) {
 }
 
 // Return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { 
-  return Jiffies() - IdleJiffies();
-}
+long LinuxParser::ActiveJiffies() { return Jiffies() - IdleJiffies(); }
 
 // Return the idle ticks since boot
 long LinuxParser::IdleJiffies() {
@@ -182,11 +181,8 @@ long LinuxParser::IdleJiffies() {
   return idleJiffies;
 }
 
-// TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
-
 // Return the total number of processes
-int LinuxParser::TotalProcesses() { 
+int LinuxParser::TotalProcesses() {
   string line;
   string key;
   int processes = 0;
@@ -198,7 +194,7 @@ int LinuxParser::TotalProcesses() {
         if (key == "processes") {
           linestream >> processes;
           break;
-        } 
+        }
       }
     }
   }
@@ -218,14 +214,14 @@ int LinuxParser::RunningProcesses() {
         if (key == "procs_running") {
           linestream >> running_processes;
           break;
-        } 
+        }
       }
     }
   }
   return running_processes;
 }
 
-// UNTESTED: Read and return the command associated with a process
+// Read and return the command associated with a process
 string LinuxParser::Command(int pid) {
   string cmd_line;
   string kPidDirectory = '/' + std::to_string(pid);
@@ -236,8 +232,8 @@ string LinuxParser::Command(int pid) {
   return cmd_line;
 }
 
-// UNTESTED: Read and return the memory used by a process
-string LinuxParser::Ram(int pid) { 
+// Read and return the memory used by a process
+string LinuxParser::Ram(int pid) {
   string line;
   string key;
   long ram;
@@ -250,13 +246,13 @@ string LinuxParser::Ram(int pid) {
       if (key == "VmSize:") {
         linestream >> ram;
         break;
-      } 
+      }
     }
   }
-  return std::to_string(ram/1000);
+  return std::to_string(ram / 1000);
 }
 
-// UNTESTED: Read and return the user ID associated with a process
+// Read and return the user ID associated with a process
 string LinuxParser::Uid(int pid) {
   string line;
   string key;
@@ -270,7 +266,7 @@ string LinuxParser::Uid(int pid) {
         if (key == "Uid:") {
           linestream >> uid;
           break;
-        } 
+        }
       }
     }
   }
@@ -278,7 +274,7 @@ string LinuxParser::Uid(int pid) {
 }
 
 // Read and return the user associated with a process
-string LinuxParser::User(int pid) { 
+string LinuxParser::User(int pid) {
   string line;
   string user;
   string uid;
@@ -286,8 +282,8 @@ string LinuxParser::User(int pid) {
   std::ifstream filestream(kPasswordPath);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
-      std::istringstream linestream(line);
       std::replace(line.begin(), line.end(), ':', ' ');
+      std::istringstream linestream(line);
       linestream >> user >> placeholder >> uid;
       if (uid == Uid(pid)) {
         break;
@@ -297,8 +293,8 @@ string LinuxParser::User(int pid) {
   return user;
 }
 
-// UNTESTED: Read and return the uptime of a process
-long LinuxParser::UpTime(int pid) { 
+// Read and return the uptime of a process
+long LinuxParser::UpTime(int pid) {
   string line;
   string placeholder;
   long start_time = 0;
@@ -316,5 +312,5 @@ long LinuxParser::UpTime(int pid) {
     }
   }
 
-  return start_time/sysconf(_SC_CLK_TCK);
+  return UpTime() - start_time / sysconf(_SC_CLK_TCK);
 }
