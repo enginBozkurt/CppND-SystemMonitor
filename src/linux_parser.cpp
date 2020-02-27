@@ -299,7 +299,7 @@ long LinuxParser::UpTime(int pid) {
   string placeholder;
   long start_time = 0;
   string kPidDirectory = '/' + std::to_string(pid);
-  std::ifstream filestream(kProcDirectory + kPidDirectory + kStatusFilename);
+  std::ifstream filestream(kProcDirectory + kPidDirectory + kStatFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
